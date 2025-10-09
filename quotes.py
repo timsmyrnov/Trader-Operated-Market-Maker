@@ -1,9 +1,9 @@
 import itertools
 
-_order_id_generator = itertools.count(1)
+_quote_id_generator = itertools.count(1)
 
 def generate_quote_id() -> int:
-    return next(_order_id_generator)
+    return next(_quote_id_generator)
 
 class Quote:
     def __init__(self, bid: float, ask: float, bid_size: int, ask_size: int, symbol: str, src: str = 'mm') -> None:

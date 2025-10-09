@@ -60,8 +60,12 @@ class OrderBook:
 
     def handle_order(self, order: Order):
         if order.side == 'BUY':
+            if order.order_type == 'MARKET':
+                order.price = self._best_ask()
             self._match_buy(order)
         else:
+            if order.order_type == 'MARKET':
+                order.price = self._best_bid()
             self._match_sell(order)
 
     def handle_quote(self, quote: Quote):
@@ -101,15 +105,9 @@ if __name__ == '__main__':
         Order('BUY',  'AAPL', 'LIMIT', price=100.70, qty=60,  src='indv'),
         Order('SELL', 'AAPL', 'LIMIT', price=100.90, qty=100, src='hft'),
         Order('BUY',  'AAPL', 'LIMIT', price=100.65, qty=150, src='mm'),
-        Order('SELL', 'AAPL', 'LIMIT', price=100.95, qty=80,  src='indv'),
-        Order('BUY',  'AAPL', 'LIMIT', price=100.60, qty=120, src='mm'),
-        Order('SELL', 'AAPL', 'LIMIT', price=101.00, qty=90,  src='hft'),
-        Order('BUY',  'AAPL', 'LIMIT', price=100.55, qty=200, src='indv'),
         Order('SELL', 'AAPL', 'LIMIT', price=101.05, qty=50,  src='mm'),
         Order('BUY',  'AAPL', 'LIMIT', price=100.75, qty=70,  src='hft'),
         Order('SELL', 'AAPL', 'LIMIT', price=100.85, qty=130, src='indv'),
-        Order('SELL', 'AAPL', 'LIMIT', price=100.85, qty=1, src='indv'),
-        Order('SELL', 'AAPL', 'LIMIT', price=100.85, qty=2, src='indv'),
         Order('SELL', 'AAPL', 'LIMIT', price=100.85, qty=3, src='indv')
     ]
 
@@ -118,10 +116,6 @@ if __name__ == '__main__':
         Quote(100.62, 100.88, 1000, 800, 'AAPL'),
         Quote(100.70, 100.90, 200, 150, 'AAPL'),
         Quote(100.58, 100.86, 750, 500, 'AAPL'),
-        Quote(100.76, 100.95, 100, 50, 'AAPL'),
-        Quote(100.55, 100.89, 600, 700, 'AAPL'),
-        Quote(100.73, 100.92, 350, 350, 'AAPL'),
-        Quote(100.78, 100.96, 150, 120, 'AAPL'),
         Quote(100.80, 101.00, 90, 200, 'AAPL'),
         Quote(100.59, 100.87, 1000, 1000, 'AAPL'),
     ]
@@ -133,5 +127,3 @@ if __name__ == '__main__':
 
     print(book)
     print(book.get_tob())
-
-    book.handle_order(Order('BUY', 'AAPL', 'LIMIT', price=100.85, qty=1, src='indv'))
