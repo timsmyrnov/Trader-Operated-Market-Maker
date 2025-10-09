@@ -8,43 +8,73 @@ class OrderBook:
         self.bids: Dict[float, Deque[Order]] = {}
         self.asks: Dict[float, Deque[Order]] = {}
 
+    def _best_bid(self):
+        return max(self.bids.keys()) if self.bids else None
+
+    def _best_ask(self):
+        return min(self.asks.keys()) if self.asks else None
+
+    def _clean_level(self, side: str, price: float):
+        book = self.bids if side == 'BUY' else self.asks
+        q = book.get(price)
+        if q is not None and not q:
+            del book[price]
+
+    def _match_buy(self, order: Order):
+        while order.qty > 0 and self.asks:
+            best_ask = self._best_ask()
+            if best_ask is None or best_ask > order.price:
+                break
+            q = self.asks[best_ask]
+
+            while order.qty > 0 and q:
+                resting = q[0]
+                traded = min(order.qty, resting.qty)
+                order.qty -= traded
+                resting.qty -= traded
+                if resting.qty == 0:
+                    q.popleft()
+            self._clean_level('SELL', best_ask)
+
+        if order.qty > 0:
+            self.bids.setdefault(order.price, deque()).append(order)
+
+    def _match_sell(self, order: Order):
+        while order.qty > 0 and self.bids:
+            best_bid = self._best_bid()
+            if best_bid is None or best_bid < order.price:
+                break
+            q = self.bids[best_bid]
+
+            while order.qty > 0 and q:
+                resting = q[0]
+                traded = min(order.qty, resting.qty)
+                order.qty -= traded
+                resting.qty -= traded
+                if resting.qty == 0:
+                    q.popleft()
+            self._clean_level('BUY', best_bid)
+
+        if order.qty > 0:
+            self.asks.setdefault(order.price, deque()).append(order)
+
     def handle_order(self, order: Order):
         if order.side == 'BUY':
-            # Match bid to existing ask
-            if order.order_type == 'LIMIT' and order.price in self.asks:
-                total_ask_qty = sum(o.qty for o in self.asks[order.price])
-                if order.qty < total_ask_qty:
-                    return
-
-            if order.price not in self.bids:
-                self.bids[order.price] = deque()
-            self.bids[order.price].append(order)
-
+            self._match_buy(order)
         else:
-            # Match ask to existing bid
-            if order.price in self.bids:
-                total_bid_qty = sum(o.qty for o in self.bids[order.price])
-                if order.qty < total_bid_qty:
-                    return
-
-            if order.price not in self.asks:
-                self.asks[order.price] = deque()
-            self.asks[order.price].append(order)
+            self._match_sell(order)
 
     def handle_quote(self, quote: Quote):
         bid_order = Order('BUY', quote.symbol, 'LIMIT', price=quote.bid, qty=quote.bid_size, src=quote.src)
         ask_order = Order('SELL', quote.symbol, 'LIMIT', price=quote.ask, qty=quote.ask_size, src=quote.src)
-
         self.handle_order(bid_order)
         self.handle_order(ask_order)
 
     def get_tob(self) -> tuple:
-        bid = max(self.bids.keys(), default=None)
-        ask = min(self.asks.keys(), default=None)
-
+        bid = self._best_bid()
+        ask = self._best_ask()
         bid_size = sum(o.qty for o in self.bids.get(bid, [])) if bid is not None else 0
         ask_size = sum(o.qty for o in self.asks.get(ask, [])) if ask is not None else 0
-
         spread = (ask - bid) if (bid is not None and ask is not None) else None
         return (bid, bid_size, ask, ask_size, spread)
 
@@ -78,6 +108,9 @@ if __name__ == '__main__':
         Order('SELL', 'AAPL', 'LIMIT', price=101.05, qty=50,  src='mm'),
         Order('BUY',  'AAPL', 'LIMIT', price=100.75, qty=70,  src='hft'),
         Order('SELL', 'AAPL', 'LIMIT', price=100.85, qty=130, src='indv'),
+        Order('SELL', 'AAPL', 'LIMIT', price=100.85, qty=1, src='indv'),
+        Order('SELL', 'AAPL', 'LIMIT', price=100.85, qty=2, src='indv'),
+        Order('SELL', 'AAPL', 'LIMIT', price=100.85, qty=3, src='indv')
     ]
 
     quotes = [
@@ -93,9 +126,12 @@ if __name__ == '__main__':
         Quote(100.59, 100.87, 1000, 1000, 'AAPL'),
     ]
 
-    for o, q in zip(orders, quotes):
+    for o in orders:
         book.handle_order(o)
+    for q in quotes:
         book.handle_quote(q)
 
     print(book)
     print(book.get_tob())
+
+    book.handle_order(Order('BUY', 'AAPL', 'LIMIT', price=100.85, qty=1, src='indv'))

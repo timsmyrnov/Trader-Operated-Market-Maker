@@ -23,7 +23,7 @@ def run_simulation():
 
         prices = mb.generate_market_tick(prices)
 
-        if random.randint(1, 14) == 1:
+        if random.randint(1, 20) == 1:
             macro_event = random.choice([me.generate_positive_event, me.generate_negative_event])()
             prices = mb.generate_market_fluctuation(prices, macro_event)
             print()
@@ -37,7 +37,7 @@ def run_simulation():
         print(new_quote)
         print(new_order)
 
-        time.sleep(0.5)
+        time.sleep(0.2)
 
 if __name__ == "__main__":
     print(run_simulation())
