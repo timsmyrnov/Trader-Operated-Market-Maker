@@ -33,7 +33,7 @@ The screenshot below shows a short extract of the main simulation loop:
 
 - colored **MM quotes** hitting the book on every tick  
 - **investor market orders** interacting with those quotes  
-- a generated **macro event** (“Favorable Policy Announcement”) with an impact
+- a generated **macro event** (“Stabilization Signal”) with an impact
   magnitude  
 - the post-event **repricing** of the whole symbol universe
 
