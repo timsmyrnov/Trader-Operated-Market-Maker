@@ -37,7 +37,7 @@ The screenshot below shows a short extract of the main simulation loop:
   magnitude  
 - the post-event **repricing** of the whole symbol universe
 
-[![Terminal snapshot of TOMM run loop with quotes, retail orders, and a macro event](https://i.postimg.cc/kMKYzyBt/Screenshot-2025-12-09-at-00-20-35.png)](https://postimg.cc/Z0YLypPT)
+![Terminal snapshot of TOMM run loop with quotes, retail orders, and a macro event](docs/img/run_example.png)
 
 
 ## Repository Layout
@@ -50,6 +50,9 @@ Top-level structure:
 ├── pyproject.toml
 ├── README.md
 ├── requirements.txt
+├── docs
+│   └── img
+│       └── run_example.png
 └── src/
     ├── tests/
     │   └── test_order_book.py
