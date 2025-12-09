@@ -50,8 +50,8 @@ Top-level structure:
 ├── pyproject.toml
 ├── README.md
 ├── requirements.txt
-├── docs
-│   └── img
+├── docs/
+│   └── img/
 │       └── run_example.png
 └── src/
     ├── tests/
